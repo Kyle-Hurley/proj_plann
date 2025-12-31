@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useStore } from '@/store/store';
 import { TASK_STATUSES, TASK_PRIORITIES, type Task, type TaskStatus, type TaskPriority } from '@/types/models';
 
@@ -8,7 +8,7 @@ interface TaskFormProps {
 }
 
 export function TaskForm({ task, onClose }: TaskFormProps) {
-  const { addTask, editTask } = useStore();
+  const { addTask, editTask, selectedProjectId, phases } = useStore();
   const isEditing = !!task;
 
   // Form state
@@ -16,7 +16,22 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
   const [description, setDescription] = useState(task?.description || '');
   const [status, setStatus] = useState<TaskStatus>(task?.status || 'todo');
   const [priority, setPriority] = useState<TaskPriority>(task?.priority || 'medium');
+  const [phaseId, setPhaseId] = useState<string | undefined>(task?.phaseId);
+  const [startDate, setStartDate] = useState(
+    task?.startDate ? task.startDate.split('T')[0] : ''
+  );
+  const [dueDate, setDueDate] = useState(
+    task?.dueDate ? task.dueDate.split('T')[0] : ''
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Get child phases for dropdown (only phases that have a parent - 2nd level)
+  const childPhases = useMemo(() => {
+    if (!selectedProjectId) return [];
+    return Object.values(phases)
+      .filter((p) => p.projectId === selectedProjectId && p.parentPhaseId)
+      .sort((a, b) => a.order - b.order);
+  }, [phases, selectedProjectId]);
 
   // Update form when task prop changes
   useEffect(() => {
@@ -25,6 +40,9 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
       setDescription(task.description || '');
       setStatus(task.status);
       setPriority(task.priority);
+      setPhaseId(task.phaseId);
+      setStartDate(task.startDate ? task.startDate.split('T')[0] : '');
+      setDueDate(task.dueDate ? task.dueDate.split('T')[0] : '');
     }
   }, [task]);
 
@@ -33,6 +51,12 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
 
     if (!name.trim()) {
       alert('Task name is required');
+      return;
+    }
+
+    // Validate date range
+    if (dueDate && startDate && dueDate < startDate) {
+      alert('Due date must be after start date');
       return;
     }
 
@@ -46,6 +70,9 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
           description: description.trim() || undefined,
           status,
           priority,
+          phaseId: phaseId || undefined,
+          startDate: startDate || undefined,
+          dueDate: dueDate || undefined,
         });
       } else {
         // Create new task
@@ -54,7 +81,10 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
           description: description.trim() || undefined,
           status,
           priority,
-          projectId: 'default', // TODO: Replace with actual project selection
+          projectId: selectedProjectId || 'default', // Use selected project or fallback to default
+          phaseId: phaseId || undefined,
+          startDate: startDate || undefined,
+          dueDate: dueDate || undefined,
           order: Date.now(), // Simple ordering by creation time
         });
       }
@@ -149,6 +179,58 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
                 </option>
               ))}
             </select>
+          </div>
+        </div>
+
+        {/* Phase */}
+        <div>
+          <label htmlFor="phaseId" className="block text-sm font-medium text-gray-700">
+            Phase (Optional)
+          </label>
+          <select
+            id="phaseId"
+            value={phaseId || ''}
+            onChange={(e) => setPhaseId(e.target.value || undefined)}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border"
+            disabled={isSubmitting}
+          >
+            <option value="">None (Unassigned)</option>
+            {childPhases.map((phase) => (
+              <option key={phase.id} value={phase.id}>
+                {phase.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Dates (side by side) */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">
+              Start Date
+            </label>
+            <input
+              type="date"
+              id="startDate"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border"
+              disabled={isSubmitting}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700">
+              Due Date
+            </label>
+            <input
+              type="date"
+              id="dueDate"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border"
+              disabled={isSubmitting}
+            />
           </div>
         </div>
 

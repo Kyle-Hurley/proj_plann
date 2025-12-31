@@ -148,3 +148,34 @@ export type CreateTaskInput = Omit<Task, 'id' | 'createdAt' | 'updatedAt'>;
 
 // Type for updating a task (all fields optional except id)
 export type UpdateTaskInput = Partial<Omit<Task, 'id' | 'createdAt'>>;
+
+// ============================================================================
+// PROJECT HELPER TYPES
+// ============================================================================
+
+export const PROJECT_STATUSES: ProjectStatus[] = ['planning', 'active', 'on-hold', 'completed', 'archived'];
+
+export type CreateProjectInput = Omit<Project, 'id' | 'createdAt' | 'updatedAt'>;
+export type UpdateProjectInput = Partial<Omit<Project, 'id' | 'createdAt'>>;
+
+// ============================================================================
+// PHASE HELPER TYPES
+// ============================================================================
+
+export type CreatePhaseInput = Omit<Phase, 'id' | 'createdAt' | 'updatedAt'>;
+export type UpdatePhaseInput = Partial<Omit<Phase, 'id' | 'createdAt'>>;
+
+// ============================================================================
+// FILTER TYPES
+// ============================================================================
+
+export interface TaskFilters {
+  phaseId?: string;        // Filter by phase (undefined = all phases, null = unassigned tasks)
+  status?: TaskStatus;     // Filter by status
+  priority?: TaskPriority; // Filter by priority
+  searchText?: string;     // Text search in name/description
+  startDateFrom?: string;  // ISO date
+  startDateTo?: string;    // ISO date
+  dueDateFrom?: string;    // ISO date
+  dueDateTo?: string;      // ISO date
+}

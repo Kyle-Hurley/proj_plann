@@ -1,5 +1,6 @@
 import { db } from './db';
 import type { AppState } from '@/types/models';
+import { useStore } from '@/store/store';
 
 // ============================================================================
 // EXPORT FUNCTIONALITY
@@ -20,6 +21,9 @@ export async function exportToJSON(): Promise<void> {
       db.budgetEntries.toArray(),
     ]);
 
+    // Get selected project ID from store
+    const selectedProjectId = useStore.getState().selectedProjectId;
+
     // Convert arrays to normalized records (id -> entity)
     const appState: AppState = {
       tasks: Object.fromEntries(tasks.map(t => [t.id, t])),
@@ -28,9 +32,20 @@ export async function exportToJSON(): Promise<void> {
       deliverables: Object.fromEntries(deliverables.map(d => [d.id, d])),
       personnel: Object.fromEntries(personnel.map(p => [p.id, p])),
       budgetEntries: Object.fromEntries(budgetEntries.map(b => [b.id, b])),
+      selectedProjectId,  // Include current project selection
       version: '1.0.0',
       lastSyncedAt: new Date().toISOString(),
     };
+
+    // Generate filename with project name
+    let filename = `project-plan-${new Date().toISOString().split('T')[0]}.json`;
+    if (selectedProjectId && projects.length > 0) {
+      const project = projects.find(p => p.id === selectedProjectId);
+      if (project) {
+        const safeName = project.name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+        filename = `${safeName}-${new Date().toISOString().split('T')[0]}.json`;
+      }
+    }
 
     // Create JSON blob
     const json = JSON.stringify(appState, null, 2);
@@ -40,7 +55,7 @@ export async function exportToJSON(): Promise<void> {
     // Trigger download
     const a = document.createElement('a');
     a.href = url;
-    a.download = `project-plan-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -71,6 +86,21 @@ export async function importFromJSON(file: File): Promise<void> {
       throw new Error('Invalid backup file format');
     }
 
+    // Migration: If no projects exist, create a default project
+    let projectsToImport = appState.projects;
+    if (!projectsToImport || Object.keys(projectsToImport).length === 0) {
+      const defaultProject = {
+        id: 'default',
+        name: 'Default Project',
+        description: 'Imported from legacy backup',
+        status: 'active' as const,
+        startDate: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      projectsToImport = { default: defaultProject };
+    }
+
     // Clear existing data
     await db.transaction('rw', db.tables, async () => {
       await Promise.all(db.tables.map(table => table.clear()));
@@ -78,14 +108,14 @@ export async function importFromJSON(file: File): Promise<void> {
 
     // Import data to IndexedDB
     await db.transaction('rw', db.tables, async () => {
+      // Import projects first
+      if (projectsToImport && Object.keys(projectsToImport).length > 0) {
+        await db.projects.bulkAdd(Object.values(projectsToImport));
+      }
+
       // Import tasks
       if (appState.tasks && Object.keys(appState.tasks).length > 0) {
         await db.tasks.bulkAdd(Object.values(appState.tasks));
-      }
-
-      // Import projects (if any)
-      if (appState.projects && Object.keys(appState.projects).length > 0) {
-        await db.projects.bulkAdd(Object.values(appState.projects));
       }
 
       // Import phases (if any)
@@ -108,6 +138,15 @@ export async function importFromJSON(file: File): Promise<void> {
         await db.budgetEntries.bulkAdd(Object.values(appState.budgetEntries));
       }
     });
+
+    // Restore selected project (or default to first project)
+    const store = useStore.getState();
+    if (appState.selectedProjectId && projectsToImport[appState.selectedProjectId]) {
+      store.setSelectedProject(appState.selectedProjectId);
+    } else {
+      const firstProjectId = Object.keys(projectsToImport)[0];
+      store.setSelectedProject(firstProjectId);
+    }
 
     console.log('Data imported successfully');
   } catch (error) {
@@ -133,6 +172,15 @@ export function triggerImport(onSuccess?: () => void, onError?: (error: Error) =
 
     try {
       await importFromJSON(file);
+
+      // Reload all data after import
+      const store = useStore.getState();
+      await Promise.all([
+        store.loadTasks(),
+        store.loadProjects(),
+        store.loadPhases(),
+      ]);
+
       onSuccess?.();
     } catch (error) {
       onError?.(error as Error);

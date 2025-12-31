@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { TaskList } from '@/features/tasks/components/TaskList';
+import { TaskFilters } from '@/features/tasks/components/TaskFilters';
+import { ProjectInfo } from '@/features/projects/components/ProjectInfo';
+import { PhaseList } from '@/features/phases/components/PhaseList';
 import { exportToJSON, triggerImport } from '@/services/storage/export';
-import { useStore } from '@/store/store';
 
 function App() {
   const [isExporting, setIsExporting] = useState(false);
-  const loadTasks = useStore((state) => state.loadTasks);
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -22,9 +23,8 @@ function App() {
 
   const handleImport = () => {
     triggerImport(
-      // onSuccess
+      // onSuccess (data reload handled in triggerImport)
       () => {
-        loadTasks(); // Reload tasks after import
         alert('Data imported successfully!');
       },
       // onError
@@ -87,9 +87,23 @@ function App() {
         </div>
       </header>
       <main>
-        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="px-4 py-6 sm:px-0">
-            <TaskList />
+        <div className="max-w-[1800px] mx-auto py-6 px-4">
+          <div className="grid grid-cols-12 gap-6">
+            {/* Left Sidebar: Project + Phases */}
+            <div className="col-span-3 space-y-6">
+              <ProjectInfo />
+              <PhaseList />
+            </div>
+
+            {/* Center: Tasks */}
+            <div className="col-span-6">
+              <TaskList />
+            </div>
+
+            {/* Right Sidebar: Filters */}
+            <div className="col-span-3">
+              <TaskFilters />
+            </div>
           </div>
         </div>
       </main>

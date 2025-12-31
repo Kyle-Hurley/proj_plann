@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**proj_plann** is a local-first project planning web application built with React, TypeScript, and Vite. It provides task management with local persistence using IndexedDB, designed to scale incrementally to support phases, Gantt charts, personnel management, and budget tracking.
+**proj_plann** is a local-first project planning web application built with React, TypeScript, and Vite. It provides comprehensive project planning with tasks, hierarchical phases, and advanced filtering, all with local persistence using IndexedDB.
 
-**Current Status**: Milestone 1 - Basic Task CRUD with local persistence
+**Current Status**: Milestone 2 - Single Project Management with 2-Level Phases and Filtering
 
 ## Development Commands
 
@@ -55,25 +55,32 @@ Infrastructure Layer (IndexedDB via Dexie)
 ```
 src/
 ├── app/                   # Application setup
-│   ├── App.tsx           # Root component with export/import
+│   ├── App.tsx           # Root component with 3-column layout
 │   └── main.tsx          # Entry point
 │
 ├── features/             # Feature modules (domain-driven)
-│   └── tasks/
-│       └── components/   # TaskList, TaskForm, TaskItem
+│   ├── tasks/
+│   │   └── components/   # TaskList, TaskForm, TaskItem, TaskFilters
+│   ├── projects/
+│   │   └── components/   # ProjectInfo, ProjectForm
+│   └── phases/
+│       └── components/   # PhaseList, PhaseItem, PhaseForm
 │
 ├── store/                # State management
-│   ├── store.ts          # Zustand store setup
+│   ├── store.ts          # Zustand store with all slices + selectors
 │   └── slices/
-│       └── tasksSlice.ts # Task CRUD actions
+│       ├── tasksSlice.ts    # Task CRUD actions
+│       ├── projectsSlice.ts # Project CRUD actions
+│       ├── phasesSlice.ts   # Phase CRUD with 2-level validation
+│       └── filtersSlice.ts  # Filter state management
 │
 ├── services/             # Infrastructure layer
 │   └── storage/
 │       ├── db.ts         # Dexie database schema
-│       └── export.ts     # JSON export/import utilities
+│       └── export.ts     # Project-scoped JSON export/import
 │
 ├── types/
-│   └── models.ts         # TypeScript data models
+│   └── models.ts         # TypeScript data models + filter types
 │
 └── styles/
     └── index.css         # Tailwind imports
@@ -83,26 +90,45 @@ src/
 
 Data is stored in a **normalized structure** (entities indexed by ID) in IndexedDB:
 
-- **Task**: Core entity with name, description, status, priority, timestamps
-  - Status: `todo`, `in-progress`, `blocked`, `done`, `cancelled`
-  - Priority: `low`, `medium`, `high`, `critical`
+**Active Entities (Milestone 2):**
+- **Project**: Container for tasks and phases with metadata (name, description, dates, status)
+  - Status: `planning`, `active`, `on-hold`, `completed`, `archived`
+  - Single project loaded at a time (switch via JSON import/export)
   - Auto-generated fields: `id` (UUID), `createdAt`, `updatedAt`
 
-Future entities (schema already defined):
-- **Project**: Container for tasks and phases
-- **Phase**: Hierarchical grouping of tasks
+- **Phase**: 2-level hierarchical grouping of tasks
+  - Parent phases (no `parentPhaseId`) act as section headers
+  - Child phases (with `parentPhaseId`) contain tasks
+  - Enforced 2-level limit (no grandchildren allowed)
+  - Optional color coding and date ranges
+  - Auto-generated fields: `id` (UUID), `createdAt`, `updatedAt`
+
+- **Task**: Work items with comprehensive metadata
+  - Status: `todo`, `in-progress`, `blocked`, `done`, `cancelled`
+  - Priority: `low`, `medium`, `high`, `critical`
+  - Linked to project via `projectId`, optionally to phase via `phaseId`
+  - Optional `startDate` and `dueDate` for scheduling
+  - Auto-generated fields: `id` (UUID), `createdAt`, `updatedAt`
+
+**Future entities (schema already defined):**
 - **Deliverable**: Outputs linked to tasks
 - **Personnel**: Team members with rates/availability
 - **BudgetEntry**: Cost tracking for labor and materials
 
 ### Key Files
 
-#### Critical for Milestone 1:
-1. **`src/types/models.ts`** - TypeScript interfaces for all entities
+#### Critical for Milestone 2:
+1. **`src/types/models.ts`** - TypeScript interfaces for all entities + filter types
 2. **`src/services/storage/db.ts`** - Dexie database with versioned schema
-3. **`src/store/store.ts`** - Zustand store combining all slices
-4. **`src/store/slices/tasksSlice.ts`** - Task CRUD actions (addTask, editTask, removeTask, loadTasks)
-5. **`src/features/tasks/components/TaskList.tsx`** - Main UI orchestrating form and task items
+3. **`src/store/store.ts`** - Zustand store combining all slices + filtering selectors
+4. **`src/store/slices/tasksSlice.ts`** - Task CRUD actions
+5. **`src/store/slices/projectsSlice.ts`** - Project CRUD with dependency checking
+6. **`src/store/slices/phasesSlice.ts`** - Phase CRUD with 2-level hierarchy enforcement
+7. **`src/store/slices/filtersSlice.ts`** - Filter state management
+8. **`src/features/tasks/components/TaskList.tsx`** - Main task list with filtered selector
+9. **`src/features/projects/components/ProjectInfo.tsx`** - Project display and creation
+10. **`src/features/phases/components/PhaseList.tsx`** - Phase hierarchy display
+11. **`src/app/App.tsx`** - 3-column layout (project/phases, tasks, filters)
 
 ### State Management Pattern
 
@@ -190,10 +216,13 @@ this.version(2).stores({
 
 ## Future Roadmap
 
-### Milestone 2: Projects & Phases
-- Project selector dropdown
-- Phase hierarchy with drag-and-drop
-- Task filtering by project/phase
+### Milestone 2: Projects & Phases ✅ COMPLETED
+- ✅ Single project management (switch via import/export)
+- ✅ 2-level hierarchical phases
+- ✅ Comprehensive task filtering (phase, status, priority, search, date ranges)
+- ✅ Delete protection for projects/phases with dependencies
+- ✅ Project-scoped JSON export with project name in filename
+- ✅ Migration support for Milestone 1 data
 
 ### Milestone 3: Personnel & Budget
 - Personnel assignment to tasks

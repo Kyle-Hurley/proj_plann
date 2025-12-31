@@ -1,19 +1,21 @@
 import { useState, useMemo } from 'react';
-import { useStore } from '@/store/store';
+import { useStore, selectFilteredTasks } from '@/store/store';
 import { TaskForm } from './TaskForm';
 import { TaskItem } from './TaskItem';
 import type { Task } from '@/types/models';
 
 export function TaskList() {
-  // Get tasks object from store
+  // Get state needed for filtering
   const tasksObject = useStore((state) => state.tasks);
+  const filters = useStore((state) => state.filters);
+  const selectedProjectId = useStore((state) => state.selectedProjectId);
   const isLoading = useStore((state) => state.isLoading);
   const error = useStore((state) => state.error);
 
-  // Memoize the sorted array to prevent infinite re-renders
+  // Use filtered selector with memoization to prevent infinite re-renders
   const tasks = useMemo(
-    () => Object.values(tasksObject).sort((a, b) => a.order - b.order),
-    [tasksObject]
+    () => selectFilteredTasks(useStore.getState()),
+    [tasksObject, filters, selectedProjectId]
   );
 
   const [showForm, setShowForm] = useState(false);
