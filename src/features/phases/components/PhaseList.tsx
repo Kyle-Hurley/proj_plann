@@ -32,9 +32,9 @@ export function PhaseList() {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4">
+    <div className="bg-white border border-gray-300 rounded-lg p-5 shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Phases</h3>
+        <h3 className="text-lg font-bold text-gray-900">Phases</h3>
         <button
           onClick={() => {
             setEditingPhase(undefined);

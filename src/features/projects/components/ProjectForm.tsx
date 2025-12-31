@@ -106,7 +106,7 @@ export function ProjectForm({ project, onClose }: ProjectFormProps) {
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border bg-white text-gray-900"
             placeholder="Enter project name"
             required
             disabled={isSubmitting}
@@ -123,7 +123,7 @@ export function ProjectForm({ project, onClose }: ProjectFormProps) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={2}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border bg-white text-gray-900"
             placeholder="Enter project description (optional)"
             disabled={isSubmitting}
           />
@@ -140,7 +140,7 @@ export function ProjectForm({ project, onClose }: ProjectFormProps) {
               id="startDate"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border bg-white text-gray-900"
               required
               disabled={isSubmitting}
             />
@@ -155,7 +155,7 @@ export function ProjectForm({ project, onClose }: ProjectFormProps) {
               id="endDate"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border bg-white text-gray-900"
               disabled={isSubmitting}
             />
           </div>
@@ -170,7 +170,7 @@ export function ProjectForm({ project, onClose }: ProjectFormProps) {
             id="status"
             value={status}
             onChange={(e) => setStatus(e.target.value as ProjectStatus)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border bg-white text-gray-900"
             disabled={isSubmitting}
           >
             {PROJECT_STATUSES.map((s) => (

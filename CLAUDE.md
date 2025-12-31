@@ -60,9 +60,9 @@ src/
 │
 ├── features/             # Feature modules (domain-driven)
 │   ├── tasks/
-│   │   └── components/   # TaskList, TaskForm, TaskItem, TaskFilters
+│   │   └── components/   # TaskList, TaskForm, TaskItem, TaskFilters, FilterPanel
 │   ├── projects/
-│   │   └── components/   # ProjectInfo, ProjectForm
+│   │   └── components/   # ProjectInfo, ProjectForm, ExportModal
 │   └── phases/
 │       └── components/   # PhaseList, PhaseItem, PhaseForm
 │

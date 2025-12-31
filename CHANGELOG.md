@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2025-12-30
+
+### Added
+- **Export Modal**: Interactive modal for customizing export filenames
+  - Preview of final filename before export
+  - Enter key support for quick export
+  - Escape key support for cancel
+  - Auto-selects filename (without extension) for easy editing
+- **File System Access API**: Enhanced export with native "Save As" dialog
+  - Chromium browsers (Chrome, Edge, Opera) now support folder selection
+  - Graceful fallback to Downloads folder for Firefox and Safari
+  - Better user experience with OS-native save dialogs
+- **Browser Compatibility Message**: Informational message in export modal
+  - Only shown in browsers without File System Access API support
+  - Explains folder selection limitations in Firefox/Safari
+  - Helps set user expectations about export behavior
+
+### Improved
+- **Filter Panel UI**: Complete styling overhaul for consistency
+  - All filter fields now have white backgrounds matching form fields
+  - Added subtle shadows (`shadow-sm`) for visual depth
+  - Improved text contrast with `text-gray-900` for input values
+  - Updated label colors from `text-gray-600` to `text-gray-700` for better readability
+  - Consistent focus states across all input types
+- **Export Workflow**: Filename customization before export
+  - `generateDefaultFilename()` helper function for smart filename generation
+  - Project name included in default filename (e.g., `my-project-2025-12-30.json`)
+  - User cancellation handled gracefully without error messages
+- **Code Organization**: New component structure
+  - `FilterPanel` component wraps `TaskFilters` for better layout control
+  - `ExportModal` component for reusable export dialog
+
+### Fixed
+- Filter fields no longer appear with transparent/gray backgrounds
+- Consistent styling between filter fields and form fields throughout the app
+- Export cancellation no longer shows false error alerts
+
+### Technical Details
+- File System Access API detection: `'showSaveFilePicker' in window`
+- Export modal uses controlled component pattern with default filename prop
+- All Tailwind CSS classes aligned with project-wide form field standards
+
 ## [0.2.0] - 2025-12-30
 
 ### Added - Milestone 2: Single Project Management with 2-Level Phases and Filtering
@@ -161,6 +203,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - What-if analysis
 - Critical path analysis
 
-[Unreleased]: https://github.com/yourusername/proj_plann/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/yourusername/proj_plann/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/yourusername/proj_plann/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/yourusername/proj_plann/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/yourusername/proj_plann/releases/tag/v0.1.0

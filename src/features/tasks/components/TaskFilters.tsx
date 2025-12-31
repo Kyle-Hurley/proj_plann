@@ -10,18 +10,17 @@ export function TaskFilters() {
   );
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-gray-900">Filters</h3>
-        {hasActiveFilters && (
+    <div className="space-y-4 pt-4">
+      {hasActiveFilters && (
+        <div className="flex justify-end">
           <button
             onClick={clearFilters}
-            className="text-sm text-blue-600 hover:text-blue-800"
+            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
           >
             Clear All
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Search */}
       <div>
@@ -34,7 +33,7 @@ export function TaskFilters() {
           value={filters.searchText || ''}
           onChange={(e) => setFilter('searchText', e.target.value || undefined)}
           placeholder="Search tasks..."
-          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border bg-white text-gray-900"
         />
       </div>
 
@@ -47,7 +46,7 @@ export function TaskFilters() {
           id="status"
           value={filters.status || ''}
           onChange={(e) => setFilter('status', e.target.value || undefined)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border bg-white text-gray-900"
         >
           <option value="">All Statuses</option>
           {TASK_STATUSES.map((status) => (
@@ -67,7 +66,7 @@ export function TaskFilters() {
           id="priority"
           value={filters.priority || ''}
           onChange={(e) => setFilter('priority', e.target.value || undefined)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border bg-white text-gray-900"
         >
           <option value="">All Priorities</option>
           {TASK_PRIORITIES.map((priority) => (
@@ -103,7 +102,7 @@ export function TaskFilters() {
               id="startFrom"
               value={filters.startDateFrom || ''}
               onChange={(e) => setFilter('startDateFrom', e.target.value || undefined)}
-              className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 border bg-white text-gray-900"
             />
           </div>
           <div>
@@ -125,7 +124,7 @@ export function TaskFilters() {
               id="startTo"
               value={filters.startDateTo || ''}
               onChange={(e) => setFilter('startDateTo', e.target.value || undefined)}
-              className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 border bg-white text-gray-900"
             />
           </div>
         </div>
@@ -155,7 +154,7 @@ export function TaskFilters() {
               id="dueFrom"
               value={filters.dueDateFrom || ''}
               onChange={(e) => setFilter('dueDateFrom', e.target.value || undefined)}
-              className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 border bg-white text-gray-900"
             />
           </div>
           <div>
@@ -177,7 +176,7 @@ export function TaskFilters() {
               id="dueTo"
               value={filters.dueDateTo || ''}
               onChange={(e) => setFilter('dueDateTo', e.target.value || undefined)}
-              className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 border bg-white text-gray-900"
             />
           </div>
         </div>

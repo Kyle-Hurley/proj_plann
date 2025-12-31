@@ -7,9 +7,31 @@ import { useStore } from '@/store/store';
 // ============================================================================
 
 /**
- * Export all data to a JSON file
+ * Generate default export filename based on project name and current date
  */
-export async function exportToJSON(): Promise<void> {
+export async function generateDefaultFilename(): Promise<string> {
+  const selectedProjectId = useStore.getState().selectedProjectId;
+  const date = new Date().toISOString().split('T')[0];
+
+  let filename = `project-plan-${date}.json`;
+
+  if (selectedProjectId) {
+    const projects = await db.projects.toArray();
+    const project = projects.find(p => p.id === selectedProjectId);
+    if (project) {
+      const safeName = project.name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+      filename = `${safeName}-${date}.json`;
+    }
+  }
+
+  return filename;
+}
+
+/**
+ * Export all data to a JSON file
+ * @param customFilename - Optional custom filename (if not provided, auto-generates based on project name)
+ */
+export async function exportToJSON(customFilename?: string): Promise<void> {
   try {
     // Fetch all data from IndexedDB
     const [tasks, projects, phases, deliverables, personnel, budgetEntries] = await Promise.all([
@@ -37,18 +59,61 @@ export async function exportToJSON(): Promise<void> {
       lastSyncedAt: new Date().toISOString(),
     };
 
-    // Generate filename with project name
-    let filename = `project-plan-${new Date().toISOString().split('T')[0]}.json`;
-    if (selectedProjectId && projects.length > 0) {
-      const project = projects.find(p => p.id === selectedProjectId);
-      if (project) {
-        const safeName = project.name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
-        filename = `${safeName}-${new Date().toISOString().split('T')[0]}.json`;
+    // Use custom filename if provided, otherwise generate filename with project name
+    let filename: string;
+    if (customFilename) {
+      filename = customFilename.endsWith('.json') ? customFilename : `${customFilename}.json`;
+    } else {
+      filename = `project-plan-${new Date().toISOString().split('T')[0]}.json`;
+      if (selectedProjectId && projects.length > 0) {
+        const project = projects.find(p => p.id === selectedProjectId);
+        if (project) {
+          const safeName = project.name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+          filename = `${safeName}-${new Date().toISOString().split('T')[0]}.json`;
+        }
       }
     }
 
-    // Create JSON blob
+    // Create JSON content
     const json = JSON.stringify(appState, null, 2);
+
+    // Try to use File System Access API for better UX (allows custom directory selection)
+    // Falls back to traditional download if not supported
+    if ('showSaveFilePicker' in window) {
+      try {
+        // Show save file picker dialog
+        const fileHandle = await (window as any).showSaveFilePicker({
+          suggestedName: filename,
+          types: [
+            {
+              description: 'JSON Files',
+              accept: { 'application/json': ['.json'] },
+            },
+          ],
+        });
+
+        // Create a writable stream
+        const writable = await fileHandle.createWritable();
+
+        // Write the JSON content
+        await writable.write(json);
+
+        // Close the file and save
+        await writable.close();
+
+        console.log('Data exported successfully using File System Access API');
+        return;
+      } catch (err: any) {
+        // User cancelled or browser doesn't support - fall through to blob method
+        if (err.name === 'AbortError') {
+          console.log('Export cancelled by user');
+          throw new Error('Export cancelled');
+        }
+        console.warn('File System Access API failed, falling back to blob download:', err);
+      }
+    }
+
+    // Fallback: Traditional blob download (goes to default Downloads folder)
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
 
@@ -61,7 +126,7 @@ export async function exportToJSON(): Promise<void> {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    console.log('Data exported successfully');
+    console.log('Data exported successfully using blob download');
   } catch (error) {
     console.error('Error exporting data:', error);
     throw new Error('Failed to export data');

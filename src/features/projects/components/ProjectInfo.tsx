@@ -17,13 +17,13 @@ export function ProjectInfo() {
   // No project exists - show create prompt
   if (!project) {
     return (
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-5 shadow-sm">
         <p className="text-sm text-yellow-800 mb-3">
           No project selected. Create a new project or import an existing one.
         </p>
         <button
           onClick={() => setIsEditing(true)}
-          className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-500 border border-transparent rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
         >
           Create New Project
         </button>
@@ -41,10 +41,10 @@ export function ProjectInfo() {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
+    <div className="bg-white border border-gray-300 rounded-lg p-6 shadow-sm">
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-bold text-gray-900">
             {project.name}
           </h2>
           {project.description && (

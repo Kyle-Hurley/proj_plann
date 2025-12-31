@@ -1,21 +1,36 @@
 import { useState } from 'react';
 import { TaskList } from '@/features/tasks/components/TaskList';
-import { TaskFilters } from '@/features/tasks/components/TaskFilters';
+import { FilterPanel } from '@/features/tasks/components/FilterPanel';
 import { ProjectInfo } from '@/features/projects/components/ProjectInfo';
 import { PhaseList } from '@/features/phases/components/PhaseList';
-import { exportToJSON, triggerImport } from '@/services/storage/export';
+import { ExportModal } from '@/features/projects/components/ExportModal';
+import { exportToJSON, generateDefaultFilename, triggerImport } from '@/services/storage/export';
 
 function App() {
   const [isExporting, setIsExporting] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [defaultFilename, setDefaultFilename] = useState('project-plan.json');
 
-  const handleExport = async () => {
+  const handleExportClick = async () => {
+    // Generate default filename and show modal
+    const filename = await generateDefaultFilename();
+    setDefaultFilename(filename);
+    setShowExportModal(true);
+  };
+
+  const handleExportConfirm = async (filename: string) => {
+    setShowExportModal(false);
     setIsExporting(true);
     try {
-      await exportToJSON();
+      await exportToJSON(filename);
       alert('Data exported successfully!');
     } catch (error) {
       console.error('Export error:', error);
-      alert('Failed to export data. Please try again.');
+      const errorMessage = (error as Error).message;
+      // Don't show error alert if user cancelled the export
+      if (errorMessage !== 'Export cancelled') {
+        alert('Failed to export data. Please try again.');
+      }
     } finally {
       setIsExporting(false);
     }
@@ -36,7 +51,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
+      <header className="bg-white shadow-md">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold text-gray-900">Project Planner</h1>
@@ -45,7 +60,7 @@ function App() {
             <div className="flex space-x-3">
               <button
                 onClick={handleImport}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
               >
                 <svg
                   className="w-5 h-5 mr-2"
@@ -63,9 +78,9 @@ function App() {
                 Import
               </button>
               <button
-                onClick={handleExport}
+                onClick={handleExportClick}
                 disabled={isExporting}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <svg
                   className="w-5 h-5 mr-2"
@@ -102,11 +117,19 @@ function App() {
 
             {/* Right Sidebar: Filters */}
             <div className="col-span-3">
-              <TaskFilters />
+              <FilterPanel />
             </div>
           </div>
         </div>
       </main>
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        onExport={handleExportConfirm}
+        defaultFilename={defaultFilename}
+      />
     </div>
   );
 }

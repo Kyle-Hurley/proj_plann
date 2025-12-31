@@ -121,7 +121,7 @@ export function PhaseForm({ phase, onClose }: PhaseFormProps) {
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 border text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 border text-sm bg-white text-gray-900"
             placeholder="Enter phase name"
             required
             disabled={isSubmitting}
@@ -138,7 +138,7 @@ export function PhaseForm({ phase, onClose }: PhaseFormProps) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={2}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 border text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 border text-sm bg-white text-gray-900"
             placeholder="Enter description (optional)"
             disabled={isSubmitting}
           />
@@ -153,7 +153,7 @@ export function PhaseForm({ phase, onClose }: PhaseFormProps) {
             id="parentPhaseId"
             value={parentPhaseId}
             onChange={(e) => setParentPhaseId(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 border text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 border text-sm bg-white text-gray-900"
             disabled={isSubmitting}
           >
             <option value="">None (Top-level phase)</option>
@@ -179,7 +179,7 @@ export function PhaseForm({ phase, onClose }: PhaseFormProps) {
               id="startDate"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 border text-sm"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 border text-sm bg-white text-gray-900"
               disabled={isSubmitting}
             />
           </div>
@@ -193,7 +193,7 @@ export function PhaseForm({ phase, onClose }: PhaseFormProps) {
               id="endDate"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 border text-sm"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 border text-sm bg-white text-gray-900"
               disabled={isSubmitting}
             />
           </div>

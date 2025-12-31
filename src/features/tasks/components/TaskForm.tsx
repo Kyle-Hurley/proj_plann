@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useStore } from '@/store/store';
 import { TASK_STATUSES, TASK_PRIORITIES, type Task, type TaskStatus, type TaskPriority } from '@/types/models';
 
@@ -25,12 +25,29 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Get child phases for dropdown (only phases that have a parent - 2nd level)
-  const childPhases = useMemo(() => {
-    if (!selectedProjectId) return [];
-    return Object.values(phases)
-      .filter((p) => p.projectId === selectedProjectId && p.parentPhaseId)
-      .sort((a, b) => a.order - b.order);
+  // Get all phases (both parent and child) organized hierarchically for dropdown
+  const phasesHierarchy = useMemo(() => {
+    if (!selectedProjectId) return { parents: [], children: {} };
+
+    const allPhases = Object.values(phases).filter((p) => p.projectId === selectedProjectId);
+    const parents = allPhases.filter((p) => !p.parentPhaseId).sort((a, b) => a.order - b.order);
+    const childrenByParent: Record<string, typeof allPhases> = {};
+
+    allPhases.forEach((p) => {
+      if (p.parentPhaseId) {
+        if (!childrenByParent[p.parentPhaseId]) {
+          childrenByParent[p.parentPhaseId] = [];
+        }
+        childrenByParent[p.parentPhaseId].push(p);
+      }
+    });
+
+    // Sort children
+    Object.keys(childrenByParent).forEach((parentId) => {
+      childrenByParent[parentId].sort((a, b) => a.order - b.order);
+    });
+
+    return { parents, children: childrenByParent };
   }, [phases, selectedProjectId]);
 
   // Update form when task prop changes
@@ -116,7 +133,7 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border bg-white text-gray-900"
             placeholder="Enter task name"
             required
             disabled={isSubmitting}
@@ -133,7 +150,7 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border bg-white text-gray-900"
             placeholder="Enter task description (optional)"
             disabled={isSubmitting}
           />
@@ -150,7 +167,7 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
               id="status"
               value={status}
               onChange={(e) => setStatus(e.target.value as TaskStatus)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border bg-white text-gray-900"
               disabled={isSubmitting}
             >
               {TASK_STATUSES.map((s) => (
@@ -170,7 +187,7 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
               id="priority"
               value={priority}
               onChange={(e) => setPriority(e.target.value as TaskPriority)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border bg-white text-gray-900"
               disabled={isSubmitting}
             >
               {TASK_PRIORITIES.map((p) => (
@@ -191,14 +208,23 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
             id="phaseId"
             value={phaseId || ''}
             onChange={(e) => setPhaseId(e.target.value || undefined)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border bg-white text-gray-900"
             disabled={isSubmitting}
           >
             <option value="">None (Unassigned)</option>
-            {childPhases.map((phase) => (
-              <option key={phase.id} value={phase.id}>
-                {phase.name}
-              </option>
+            {phasesHierarchy.parents.map((parent) => (
+              <React.Fragment key={parent.id}>
+                {/* Parent phase */}
+                <option value={parent.id}>
+                  {parent.name}
+                </option>
+                {/* Child phases indented */}
+                {phasesHierarchy.children[parent.id]?.map((child) => (
+                  <option key={child.id} value={child.id}>
+                    {'  '}→ {child.name}
+                  </option>
+                ))}
+              </React.Fragment>
             ))}
           </select>
         </div>
@@ -214,7 +240,7 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
               id="startDate"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border bg-white text-gray-900"
               disabled={isSubmitting}
             />
           </div>
@@ -228,7 +254,7 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
               id="dueDate"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border bg-white text-gray-900"
               disabled={isSubmitting}
             />
           </div>

@@ -52,7 +52,7 @@ export function PhaseItem({ phase, isParent, onEdit }: PhaseItemProps) {
       className={`
         cursor-pointer px-3 py-2 rounded flex items-center justify-between group
         ${!isParent ? 'ml-6' : ''}
-        ${isSelected ? 'bg-blue-100 text-blue-900' : 'hover:bg-gray-100'}
+        ${isSelected ? 'bg-blue-100 text-blue-900' : 'text-gray-900 hover:bg-gray-100'}
         ${isParent ? 'font-semibold' : 'text-sm'}
       `}
     >
@@ -69,7 +69,11 @@ export function PhaseItem({ phase, isParent, onEdit }: PhaseItemProps) {
       <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
           onClick={handleEdit}
-          className="text-xs text-blue-600 hover:text-blue-800"
+          className={`text-xs font-medium transition-colors ${
+            isSelected
+              ? 'text-gray-700 hover:text-gray-900'
+              : 'text-blue-600 hover:text-blue-800'
+          }`}
           title="Edit phase"
         >
           Edit
@@ -77,7 +81,7 @@ export function PhaseItem({ phase, isParent, onEdit }: PhaseItemProps) {
         <button
           onClick={handleDelete}
           disabled={isDeleting}
-          className="text-xs text-red-600 hover:text-red-800 disabled:opacity-50"
+          className="text-xs font-medium text-red-600 hover:text-red-800 disabled:opacity-50 transition-colors"
           title="Delete phase"
         >
           {isDeleting ? 'Deleting...' : 'Delete'}
