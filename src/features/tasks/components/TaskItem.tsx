@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '@/store/store';
+import { PersonnelAssignmentModal } from '@/features/personnel/components/PersonnelAssignmentModal';
 import type { Task } from '@/types/models';
 
 interface TaskItemProps {
@@ -10,6 +11,7 @@ interface TaskItemProps {
 export function TaskItem({ task, onEdit }: TaskItemProps) {
   const { removeTask } = useStore();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showAssignmentModal, setShowAssignmentModal] = useState(false);
 
   const handleDelete = async () => {
     if (!confirm(`Are you sure you want to delete "${task.name}"?`)) {
@@ -69,20 +71,29 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
         </div>
 
         {/* Action Buttons */}
-        <div className="ml-4 flex-shrink-0 flex space-x-2">
+        <div className="ml-4 flex-shrink-0 flex flex-col space-y-2">
+          <div className="flex space-x-2">
+            <button
+              onClick={() => onEdit(task)}
+              className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              disabled={isDeleting}
+            >
+              Edit
+            </button>
+            <button
+              onClick={handleDelete}
+              className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
           <button
-            onClick={() => onEdit(task)}
-            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+            onClick={() => setShowAssignmentModal(true)}
+            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-purple-700 bg-purple-50 border border-purple-200 rounded hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
             disabled={isDeleting}
           >
-            Edit
-          </button>
-          <button
-            onClick={handleDelete}
-            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            disabled={isDeleting}
-          >
-            {isDeleting ? 'Deleting...' : 'Delete'}
+            Assign People {task.assignedTo && task.assignedTo.length > 0 && `(${task.assignedTo.length})`}
           </button>
         </div>
       </div>
@@ -91,6 +102,14 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
       <div className="mt-3 text-xs text-gray-500">
         Created: {new Date(task.createdAt).toLocaleDateString()} at {new Date(task.createdAt).toLocaleTimeString()}
       </div>
+
+      {/* Personnel Assignment Modal */}
+      {showAssignmentModal && (
+        <PersonnelAssignmentModal
+          task={task}
+          onClose={() => setShowAssignmentModal(false)}
+        />
+      )}
     </div>
   );
 }

@@ -244,6 +244,8 @@ export function triggerImport(onSuccess?: () => void, onError?: (error: Error) =
         store.loadTasks(),
         store.loadProjects(),
         store.loadPhases(),
+        store.loadPersonnel(),
+        store.loadBudgetEntries(),
       ]);
 
       onSuccess?.();

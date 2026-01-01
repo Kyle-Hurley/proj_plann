@@ -3,6 +3,9 @@ import { TaskList } from '@/features/tasks/components/TaskList';
 import { FilterPanel } from '@/features/tasks/components/FilterPanel';
 import { ProjectInfo } from '@/features/projects/components/ProjectInfo';
 import { PhaseList } from '@/features/phases/components/PhaseList';
+import { PersonnelList } from '@/features/personnel/components/PersonnelList';
+import { BudgetList } from '@/features/budget/components/BudgetList';
+import { BudgetForecast } from '@/features/budget/components/BudgetForecast';
 import { ExportModal } from '@/features/projects/components/ExportModal';
 import { exportToJSON, generateDefaultFilename, triggerImport } from '@/services/storage/export';
 
@@ -104,10 +107,12 @@ function App() {
       <main>
         <div className="max-w-[1800px] mx-auto py-6 px-4">
           <div className="grid grid-cols-12 gap-6">
-            {/* Left Sidebar: Project + Phases */}
-            <div className="col-span-3 space-y-6">
+            {/* Left Sidebar: Project + Phases + Personnel + Budget */}
+            <div className="col-span-3 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto pr-2">
               <ProjectInfo />
               <PhaseList />
+              <PersonnelList />
+              <BudgetList />
             </div>
 
             {/* Center: Tasks */}
@@ -115,8 +120,9 @@ function App() {
               <TaskList />
             </div>
 
-            {/* Right Sidebar: Filters */}
-            <div className="col-span-3">
+            {/* Right Sidebar: Budget Forecast + Filters */}
+            <div className="col-span-3 space-y-6">
+              <BudgetForecast />
               <FilterPanel />
             </div>
           </div>

@@ -7,6 +7,158 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-12-31
+
+### Added - Milestone 3: Personnel & Budget Management with Cost Forecasting
+
+#### Personnel Management
+- **Personnel entity**: Full CRUD operations for team members
+  - Properties: name, email, role, hourlyRate, availability (hours/week), isActive
+  - Active/inactive status tracking for personnel lifecycle management
+  - Dependency protection: Cannot delete personnel assigned to tasks or with budget entries
+- **Personnel assignment**: Dedicated modal interface for assigning team members to tasks
+  - Multi-select checkbox interface with personnel details
+  - Shows assigned personnel in task form (read-only display)
+  - "Assign People" button in task cards with assignment count badge
+  - Updates task's `assignedTo` array with personnel IDs
+- **PersonnelList component**: Complete personnel management interface
+  - Shows active/total count in header
+  - Add, edit, delete operations with confirmation dialogs
+  - Displays hourly rate, availability, and status badges
+- **PersonnelForm component**: Create/edit personnel with validation
+  - Name required, hourly rate and availability must be positive numbers
+  - Email validation, optional role field
+  - Active status checkbox (default: true)
+- **PersonnelAssignmentModal**: Dedicated interface for task assignments
+  - Shows active personnel with role and hourly rate
+  - Pre-selects already assigned personnel
+  - Save/cancel actions with loading states
+
+#### Budget Tracking
+- **BudgetEntry entity**: Comprehensive cost tracking across 4 categories
+  - Categories: `labor`, `materials`, `software`, `other`
+  - Tracks both `estimatedCost` and optional `actualCost`
+  - Labor-specific fields: `personnelId` and `hours` for auto-calculation
+  - Optional link to specific tasks via `taskId`
+- **Auto-calculate labor costs**: Smart cost calculation for labor entries
+  - Formula: `hourlyRate × hours` from personnel data
+  - Auto-populates estimated cost field (can be manually overridden)
+  - Updates in real-time when personnel or hours change
+- **BudgetEntryForm component**: Intelligent budget entry form
+  - Category selector with conditional field display
+  - Labor entries require personnel selection and hours input
+  - Non-labor entries use manual estimated cost input
+  - Task linking via dropdown of project tasks
+  - Actual cost tracking for variance analysis
+- **BudgetList component**: Budget entry management with filtering
+  - Category filter tabs (All, Labor, Materials, Software, Other)
+  - Shows entry count per category
+  - Empty states for filtered views
+  - Add/edit/delete operations with confirmation
+- **BudgetEntryItem component**: Individual budget entry display
+  - Color-coded category badges
+  - Shows estimated vs actual costs with variance
+  - Links to associated task and personnel names
+  - Visual variance indicators (green/red/gray)
+
+#### Budget Summaries & Analytics
+- **BudgetSummary component**: Comprehensive project budget overview
+  - Integrated into ProjectInfo card as collapsible section
+  - **Total budget tracking**: Estimated vs actual with variance percentage
+  - **Labor vs non-labor breakdown**: Separate cost tracking
+  - **Category-wise breakdown**: Individual category performance
+  - **Visual status indicators**:
+    - Red warning: Over budget by 10%+
+    - Yellow caution: Within 5-10% of budget
+    - Green checkmark: Under budget
+  - Real-time updates as budget entries are added/modified
+
+#### Cost Forecasting
+- **BudgetForecast component**: Advanced cost projection system
+  - **Task completion progress**: Visual progress bar with percentage
+  - **Burn rate analysis**: Calculates actual cost per % completion
+  - **Forecasted final cost**: Projects total cost based on current spending rate
+  - **Overrun/savings calculation**: Shows projected variance from budget
+  - **Trend indicators**:
+    - Under budget: Forecasted >5% under estimate (green)
+    - On budget: Within ±5% of estimate (yellow)
+    - Over budget: Forecasted >5% over estimate (red)
+  - **Warning banners**: Prominent alerts when forecasting budget overrun
+  - **Conditional display**: Only shows when project has tasks and budget entries
+- **Real-time metrics**:
+  - Actual cost to date
+  - Estimated total cost
+  - Forecasted final cost
+  - Estimated cost remaining
+  - Burn rate (cost per 100% completion)
+
+#### State Management Enhancements
+- **New Zustand slices**:
+  - `personnelSlice`: Personnel CRUD with task/budget dependency checking
+  - `budgetSlice`: Budget entry CRUD operations
+- **Advanced selectors**:
+  - `selectActivePersonnel`: Returns active personnel sorted by name
+  - `selectProjectBudgetEntries`: Filters budget entries by current project
+  - `selectProjectBudgetSummary`: Complex budget rollup calculations
+  - `selectCostForecast`: Burn rate and forecast calculations
+- **Proper memoization**: All selectors use `useMemo` to prevent infinite re-renders
+- **Dependency protection**: Cannot delete personnel with task assignments or budget entries
+
+#### UI/UX Improvements
+- **Updated 3-column layout**:
+  - Left sidebar: Scrollable (ProjectInfo + BudgetSummary, PhaseList, PersonnelList, BudgetList)
+  - Center panel: TaskList with "Assign People" buttons
+  - Right sidebar: BudgetForecast + FilterPanel
+- **Scrollable left sidebar**: Added overflow handling for long content
+- **Budget forecast card**: New right sidebar component for cost tracking
+- **Visual indicators**: Color-coded badges for budget status and trends
+- **Loading states**: Proper loading indicators during async operations
+- **Empty states**: Helpful prompts for budget forecast when no data exists
+
+#### Components Added
+- `PersonnelList` - Personnel management interface
+- `PersonnelItem` - Individual personnel card with edit/delete
+- `PersonnelForm` - Create/edit personnel with validation
+- `PersonnelAssignmentModal` - Assign personnel to tasks
+- `BudgetList` - Budget entry management with category filtering
+- `BudgetEntryItem` - Individual budget entry display
+- `BudgetEntryForm` - Create/edit budget entries with auto-calculation
+- `BudgetSummary` - Project budget overview (in ProjectInfo)
+- `BudgetForecast` - Cost forecast with burn rate analysis
+
+### Improved
+- **Database schema**: Upgraded to version 2
+  - Added `personnelId` index to budgetEntries table
+  - Enables efficient querying for personnel dependency checking
+- **Export/import**: Now includes personnel and budget data
+  - Updated `triggerImport` to reload personnel and budget entries
+  - Full project state preservation across export/import cycles
+- **TaskItem component**: Enhanced with personnel assignment
+  - "Assign People" button with count badge
+  - Stacked button layout for better mobile support
+- **TaskForm component**: Shows assigned personnel
+  - Read-only display of assigned personnel names and roles
+  - Link to assignment modal for management
+
+### Fixed
+- **Infinite render loop in BudgetEntryForm**: Fixed Zustand selector usage
+  - Changed from single object selector to separate useStore calls
+  - Prevents "Maximum update depth exceeded" error
+  - Pattern: Use multiple `useStore((state) => state.field)` instead of object destructuring
+- **Database index error**: Added `personnelId` to budgetEntries indexes
+  - Fixes "KeyPath personnelId on object store budgetEntries is not indexed" error
+  - Enables WHERE queries on personnelId field
+
+### Technical Details
+- Database version: 2 (added personnelId index)
+- New selectors with complex aggregation logic:
+  - Budget rollups calculate totals, variances, and percentages
+  - Forecast uses burn rate formula: `actualCost / (percentComplete / 100)`
+- Auto-calculation uses reactive useEffect patterns
+- All budget calculations handle edge cases (0%, 100%, no data)
+- Type-safe budget summary interfaces with strict TypeScript
+- Zustand store now combines 6 slices: tasks, projects, phases, filters, personnel, budget
+
 ## [0.2.1] - 2025-12-30
 
 ### Added
@@ -188,11 +340,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Future Milestones
 
-### Milestone 3: Personnel & Budget (Planned)
-- Team member management
-- Cost tracking and forecasting
-- Budget rollups
-
 ### Milestone 4: Gantt Chart (Planned)
 - Visual timeline with DHTMLX Gantt
 - Drag-to-reschedule functionality
@@ -203,7 +350,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - What-if analysis
 - Critical path analysis
 
-[Unreleased]: https://github.com/yourusername/proj_plann/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/yourusername/proj_plann/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/yourusername/proj_plann/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/yourusername/proj_plann/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/yourusername/proj_plann/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/yourusername/proj_plann/releases/tag/v0.1.0

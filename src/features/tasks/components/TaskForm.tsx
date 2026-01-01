@@ -8,7 +8,7 @@ interface TaskFormProps {
 }
 
 export function TaskForm({ task, onClose }: TaskFormProps) {
-  const { addTask, editTask, selectedProjectId, phases } = useStore();
+  const { addTask, editTask, selectedProjectId, phases, personnel } = useStore();
   const isEditing = !!task;
 
   // Form state
@@ -228,6 +228,41 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
             ))}
           </select>
         </div>
+
+        {/* Assigned Personnel (Read-Only Display) */}
+        {isEditing && task && (
+          <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Assigned Personnel
+                </label>
+                {!task.assignedTo || task.assignedTo.length === 0 ? (
+                  <p className="text-sm text-gray-500">No personnel assigned</p>
+                ) : (
+                  <div className="space-y-1">
+                    {task.assignedTo.map((personnelId) => {
+                      const person = personnel[personnelId];
+                      return person ? (
+                        <div key={personnelId} className="text-sm text-gray-700">
+                          • {person.name}
+                          {person.role && <span className="text-gray-500"> ({person.role})</span>}
+                        </div>
+                      ) : (
+                        <div key={personnelId} className="text-sm text-gray-400 italic">
+                          • Unknown personnel (ID: {personnelId})
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-blue-600">
+              Use the "Assign People" button in the task card to manage assignments
+            </p>
+          </div>
+        )}
 
         {/* Dates (side by side) */}
         <div className="grid grid-cols-2 gap-4">

@@ -166,6 +166,56 @@ export type CreatePhaseInput = Omit<Phase, 'id' | 'createdAt' | 'updatedAt'>;
 export type UpdatePhaseInput = Partial<Omit<Phase, 'id' | 'createdAt'>>;
 
 // ============================================================================
+// PERSONNEL HELPER TYPES
+// ============================================================================
+
+export type CreatePersonnelInput = Omit<Personnel, 'id' | 'createdAt' | 'updatedAt'>;
+export type UpdatePersonnelInput = Partial<Omit<Personnel, 'id' | 'createdAt'>>;
+
+// ============================================================================
+// BUDGET HELPER TYPES
+// ============================================================================
+
+export type CreateBudgetEntryInput = Omit<BudgetEntry, 'id' | 'createdAt' | 'updatedAt'>;
+export type UpdateBudgetEntryInput = Partial<Omit<BudgetEntry, 'id' | 'createdAt'>>;
+
+export const BUDGET_CATEGORIES: BudgetCategory[] = ['labor', 'materials', 'software', 'other'];
+
+// Budget summary types
+export interface BudgetCategorySummary {
+  category: BudgetCategory;
+  estimatedTotal: number;
+  actualTotal: number;
+  variance: number;
+  variancePercent: number;
+  entryCount: number;
+}
+
+export interface ProjectBudgetSummary {
+  totalEstimated: number;
+  totalActual: number;
+  totalVariance: number;
+  totalVariancePercent: number;
+  byCategory: Record<BudgetCategory, BudgetCategorySummary>;
+  laborCosts: { estimated: number; actual: number };
+  nonLaborCosts: { estimated: number; actual: number };
+}
+
+// Cost forecast type
+export interface CostForecast {
+  completedTasksCount: number;
+  totalTasksCount: number;
+  percentComplete: number;
+  actualCostToDate: number;
+  estimatedTotalCost: number;
+  forecastedFinalCost: number;
+  estimatedCostRemaining: number;
+  forecastedOverrun: number;
+  burnRate: number;
+  trend: 'under-budget' | 'on-budget' | 'over-budget';
+}
+
+// ============================================================================
 // FILTER TYPES
 // ============================================================================
 

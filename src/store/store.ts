@@ -4,14 +4,17 @@ import { createTasksSlice, type TasksSlice } from './slices/tasksSlice';
 import { createProjectsSlice, type ProjectsSlice } from './slices/projectsSlice';
 import { createPhasesSlice, type PhasesSlice } from './slices/phasesSlice';
 import { createFiltersSlice, type FiltersSlice } from './slices/filtersSlice';
+import { createPersonnelSlice, type PersonnelSlice } from './slices/personnelSlice';
+import { createBudgetSlice, type BudgetSlice } from './slices/budgetSlice';
 import { initializeDatabase } from '@/services/storage/db';
-import type { Phase, Task } from '@/types/models';
+import type { Phase, Task, Personnel, BudgetEntry, ProjectBudgetSummary, BudgetCategorySummary, CostForecast } from '@/types/models';
+import { BUDGET_CATEGORIES } from '@/types/models';
 
 // ============================================================================
 // ROOT STORE TYPE
 // ============================================================================
 
-export type RootStore = TasksSlice & ProjectsSlice & PhasesSlice & FiltersSlice;
+export type RootStore = TasksSlice & ProjectsSlice & PhasesSlice & FiltersSlice & PersonnelSlice & BudgetSlice;
 
 // ============================================================================
 // CREATE STORE
@@ -24,6 +27,8 @@ export const useStore = create<RootStore>()(
       ...createProjectsSlice(...args),
       ...createPhasesSlice(...args),
       ...createFiltersSlice(...args),
+      ...createPersonnelSlice(...args),
+      ...createBudgetSlice(...args),
     }),
     {
       name: 'ProjectPlannerStore',
@@ -45,6 +50,8 @@ initializeDatabase()
       state.loadTasks(),
       state.loadProjects(),
       state.loadPhases(),
+      state.loadPersonnel(),
+      state.loadBudgetEntries(),
     ]).then(() => {
       console.log('All data loaded');
     });
@@ -86,6 +93,135 @@ export const selectTasksByStatus = (status: string) => (state: RootStore) =>
 // ⚠️ Returns new array reference - use with custom equality function!
 export const selectTasksByPriority = (priority: string) => (state: RootStore) =>
   Object.values(state.tasks).filter(task => task.priority === priority);
+
+// ============================================================================
+// MILESTONE 3 SELECTORS (PERSONNEL & BUDGET)
+// ============================================================================
+
+// Select all active personnel (for dropdowns)
+// ⚠️ Returns new array reference - use with useMemo in components!
+export const selectActivePersonnel = (state: RootStore): Personnel[] =>
+  Object.values(state.personnel)
+    .filter(p => p.isActive)
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+// Select budget entries for current project
+// ⚠️ Returns new array reference - use with useMemo in components!
+export const selectProjectBudgetEntries = (state: RootStore): BudgetEntry[] => {
+  const { budgetEntries, selectedProjectId } = state;
+  if (!selectedProjectId) return [];
+  return Object.values(budgetEntries).filter(e => e.projectId === selectedProjectId);
+};
+
+// Calculate project-level budget summary
+// ⚠️ Returns new object - use with useMemo in components!
+export const selectProjectBudgetSummary = (state: RootStore): ProjectBudgetSummary => {
+  const entries = selectProjectBudgetEntries(state);
+
+  const summary: ProjectBudgetSummary = {
+    totalEstimated: 0,
+    totalActual: 0,
+    totalVariance: 0,
+    totalVariancePercent: 0,
+    byCategory: {} as Record<string, BudgetCategorySummary>,
+    laborCosts: { estimated: 0, actual: 0 },
+    nonLaborCosts: { estimated: 0, actual: 0 },
+  };
+
+  // Initialize category summaries
+  BUDGET_CATEGORIES.forEach(category => {
+    summary.byCategory[category] = {
+      category,
+      estimatedTotal: 0,
+      actualTotal: 0,
+      variance: 0,
+      variancePercent: 0,
+      entryCount: 0,
+    };
+  });
+
+  // Aggregate all entries
+  entries.forEach(entry => {
+    const catSummary = summary.byCategory[entry.category];
+    catSummary.estimatedTotal += entry.estimatedCost;
+    catSummary.actualTotal += entry.actualCost || 0;
+    catSummary.entryCount++;
+
+    summary.totalEstimated += entry.estimatedCost;
+    summary.totalActual += entry.actualCost || 0;
+
+    // Track labor vs non-labor
+    if (entry.category === 'labor') {
+      summary.laborCosts.estimated += entry.estimatedCost;
+      summary.laborCosts.actual += entry.actualCost || 0;
+    } else {
+      summary.nonLaborCosts.estimated += entry.estimatedCost;
+      summary.nonLaborCosts.actual += entry.actualCost || 0;
+    }
+  });
+
+  // Calculate variances
+  summary.totalVariance = summary.totalEstimated - summary.totalActual;
+  summary.totalVariancePercent = summary.totalEstimated > 0
+    ? (summary.totalVariance / summary.totalEstimated) * 100
+    : 0;
+
+  BUDGET_CATEGORIES.forEach(category => {
+    const catSummary = summary.byCategory[category];
+    catSummary.variance = catSummary.estimatedTotal - catSummary.actualTotal;
+    catSummary.variancePercent = catSummary.estimatedTotal > 0
+      ? (catSummary.variance / catSummary.estimatedTotal) * 100
+      : 0;
+  });
+
+  return summary;
+};
+
+// Calculate cost forecast
+// ⚠️ Returns new object or null - use with useMemo in components!
+export const selectCostForecast = (state: RootStore): CostForecast | null => {
+  const { tasks, selectedProjectId } = state;
+  if (!selectedProjectId) return null;
+
+  const projectTasks = Object.values(tasks).filter(t => t.projectId === selectedProjectId);
+  const totalTasksCount = projectTasks.length;
+  const completedTasksCount = projectTasks.filter(t => t.status === 'done').length;
+
+  if (totalTasksCount === 0) return null;
+
+  const percentComplete = (completedTasksCount / totalTasksCount) * 100;
+
+  const summary = selectProjectBudgetSummary(state);
+  const actualCostToDate = summary.totalActual;
+  const estimatedTotalCost = summary.totalEstimated;
+
+  // Calculate burn rate (actual cost per % completion)
+  const burnRate = percentComplete > 0 ? actualCostToDate / (percentComplete / 100) : 0;
+
+  // Forecast final cost based on burn rate
+  const forecastedFinalCost = burnRate > 0 ? burnRate : estimatedTotalCost;
+  const forecastedOverrun = forecastedFinalCost - estimatedTotalCost;
+  const estimatedCostRemaining = estimatedTotalCost - actualCostToDate;
+
+  // Determine trend
+  let trend: 'under-budget' | 'on-budget' | 'over-budget' = 'on-budget';
+  const overrunPercent = estimatedTotalCost > 0 ? (forecastedOverrun / estimatedTotalCost) * 100 : 0;
+  if (overrunPercent > 5) trend = 'over-budget';
+  else if (overrunPercent < -5) trend = 'under-budget';
+
+  return {
+    completedTasksCount,
+    totalTasksCount,
+    percentComplete,
+    actualCostToDate,
+    estimatedTotalCost,
+    forecastedFinalCost,
+    estimatedCostRemaining,
+    forecastedOverrun,
+    burnRate,
+    trend,
+  };
+};
 
 // ============================================================================
 // MILESTONE 2 SELECTORS

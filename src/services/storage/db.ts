@@ -26,6 +26,16 @@ class ProjectDatabase extends Dexie {
       personnel: 'id, isActive',
       budgetEntries: 'id, projectId, taskId, category',
     });
+
+    // Version 2: Add personnelId index to budgetEntries for Milestone 3
+    this.version(2).stores({
+      tasks: 'id, projectId, status, priority, createdAt, dueDate',
+      projects: 'id, status, createdAt',
+      phases: 'id, projectId, parentPhaseId, order',
+      deliverables: 'id, taskId, dueDate, status',
+      personnel: 'id, isActive',
+      budgetEntries: 'id, projectId, taskId, category, personnelId',
+    });
   }
 }
 

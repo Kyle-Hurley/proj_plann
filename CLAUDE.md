@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**proj_plann** is a local-first project planning web application built with React, TypeScript, and Vite. It provides comprehensive project planning with tasks, hierarchical phases, and advanced filtering, all with local persistence using IndexedDB.
+**proj_plann** is a local-first project planning web application built with React, TypeScript, and Vite. It provides comprehensive project planning with tasks, hierarchical phases, personnel management, budget tracking with cost forecasting, all with local persistence using IndexedDB.
 
-**Current Status**: Milestone 2 - Single Project Management with 2-Level Phases and Filtering
+**Current Status**: Milestone 3 - Personnel & Budget Management with Cost Forecasting
 
 ## Development Commands
 
@@ -63,16 +63,22 @@ src/
 │   │   └── components/   # TaskList, TaskForm, TaskItem, TaskFilters, FilterPanel
 │   ├── projects/
 │   │   └── components/   # ProjectInfo, ProjectForm, ExportModal
-│   └── phases/
-│       └── components/   # PhaseList, PhaseItem, PhaseForm
+│   ├── phases/
+│   │   └── components/   # PhaseList, PhaseItem, PhaseForm
+│   ├── personnel/
+│   │   └── components/   # PersonnelList, PersonnelItem, PersonnelForm, PersonnelAssignmentModal
+│   └── budget/
+│       └── components/   # BudgetList, BudgetEntryItem, BudgetEntryForm, BudgetSummary, BudgetForecast
 │
 ├── store/                # State management
 │   ├── store.ts          # Zustand store with all slices + selectors
 │   └── slices/
-│       ├── tasksSlice.ts    # Task CRUD actions
-│       ├── projectsSlice.ts # Project CRUD actions
-│       ├── phasesSlice.ts   # Phase CRUD with 2-level validation
-│       └── filtersSlice.ts  # Filter state management
+│       ├── tasksSlice.ts       # Task CRUD actions
+│       ├── projectsSlice.ts    # Project CRUD actions
+│       ├── phasesSlice.ts      # Phase CRUD with 2-level validation
+│       ├── filtersSlice.ts     # Filter state management
+│       ├── personnelSlice.ts   # Personnel CRUD with dependency checking
+│       └── budgetSlice.ts      # Budget entry CRUD
 │
 ├── services/             # Infrastructure layer
 │   └── storage/
@@ -90,7 +96,7 @@ src/
 
 Data is stored in a **normalized structure** (entities indexed by ID) in IndexedDB:
 
-**Active Entities (Milestone 2):**
+**Active Entities (Milestone 3):**
 - **Project**: Container for tasks and phases with metadata (name, description, dates, status)
   - Status: `planning`, `active`, `on-hold`, `completed`, `archived`
   - Single project loaded at a time (switch via JSON import/export)
@@ -108,25 +114,42 @@ Data is stored in a **normalized structure** (entities indexed by ID) in Indexed
   - Priority: `low`, `medium`, `high`, `critical`
   - Linked to project via `projectId`, optionally to phase via `phaseId`
   - Optional `startDate` and `dueDate` for scheduling
+  - **`assignedTo`**: Array of personnel IDs assigned to this task
+  - Auto-generated fields: `id` (UUID), `createdAt`, `updatedAt`
+
+- **Personnel**: Team members with roles and hourly rates
+  - Fields: `name`, `email`, `role`, `hourlyRate`, `availability` (hours/week)
+  - `isActive`: Boolean to track active vs inactive personnel
+  - Used for task assignments and labor budget calculations
+  - Auto-generated fields: `id` (UUID), `createdAt`, `updatedAt`
+
+- **BudgetEntry**: Cost tracking for labor and materials
+  - Category: `labor`, `materials`, `software`, `other`
+  - Tracks `estimatedCost` and optional `actualCost`
+  - Labor entries: Link to `personnelId` and `hours` for auto-calculation
+  - Optional link to `taskId` for task-level budget tracking
   - Auto-generated fields: `id` (UUID), `createdAt`, `updatedAt`
 
 **Future entities (schema already defined):**
 - **Deliverable**: Outputs linked to tasks
-- **Personnel**: Team members with rates/availability
-- **BudgetEntry**: Cost tracking for labor and materials
 
 ### Key Files
 
-#### Critical for Milestone 2:
-1. **`src/types/models.ts`** - TypeScript interfaces for all entities + filter types
-2. **`src/services/storage/db.ts`** - Dexie database with versioned schema
-3. **`src/store/store.ts`** - Zustand store combining all slices + filtering selectors
+#### Critical for Milestone 3:
+1. **`src/types/models.ts`** - TypeScript interfaces for all entities + filter types + budget summary types
+2. **`src/services/storage/db.ts`** - Dexie database with versioned schema (v2 adds personnelId index)
+3. **`src/store/store.ts`** - Zustand store combining all slices + budget/forecast selectors
 4. **`src/store/slices/tasksSlice.ts`** - Task CRUD actions
 5. **`src/store/slices/projectsSlice.ts`** - Project CRUD with dependency checking
 6. **`src/store/slices/phasesSlice.ts`** - Phase CRUD with 2-level hierarchy enforcement
 7. **`src/store/slices/filtersSlice.ts`** - Filter state management
-8. **`src/features/tasks/components/TaskList.tsx`** - Main task list with filtered selector
-9. **`src/features/projects/components/ProjectInfo.tsx`** - Project display and creation
+8. **`src/store/slices/personnelSlice.ts`** - Personnel CRUD with dependency checking
+9. **`src/store/slices/budgetSlice.ts`** - Budget entry CRUD
+10. **`src/features/tasks/components/TaskList.tsx`** - Main task list with filtered selector
+11. **`src/features/projects/components/ProjectInfo.tsx`** - Project display + BudgetSummary
+12. **`src/features/personnel/components/PersonnelAssignmentModal.tsx`** - Assign personnel to tasks
+13. **`src/features/budget/components/BudgetEntryForm.tsx`** - Budget entry with auto-calculation
+14. **`src/features/budget/components/BudgetForecast.tsx`** - Cost forecast with burn rate
 10. **`src/features/phases/components/PhaseList.tsx`** - Phase hierarchy display
 11. **`src/app/App.tsx`** - 3-column layout (project/phases, tasks, filters)
 
@@ -224,10 +247,17 @@ this.version(2).stores({
 - ✅ Project-scoped JSON export with project name in filename
 - ✅ Migration support for Milestone 1 data
 
-### Milestone 3: Personnel & Budget
-- Personnel assignment to tasks
-- Hourly rate tracking
-- Budget rollup calculations
+### Milestone 3: Personnel & Budget ✅ COMPLETED
+- ✅ Personnel management with roles, email, hourly rates, availability
+- ✅ Active/inactive status tracking
+- ✅ Personnel assignment to tasks via dedicated modal interface
+- ✅ Budget entries with 4 categories (labor, materials, software, other)
+- ✅ Auto-calculate labor costs (hourly rate × hours)
+- ✅ Budget summary with category rollups (labor vs non-labor)
+- ✅ Cost forecasting with burn rate analysis
+- ✅ Real-time variance tracking (estimated vs actual)
+- ✅ Budget overrun warnings and trend indicators
+- ✅ Dependency protection (can't delete personnel with assignments or budget entries)
 
 ### Milestone 4: Gantt Chart
 - Integrate DHTMLX Gantt (MIT version)

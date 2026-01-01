@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '@/store/store';
 import { ProjectForm } from './ProjectForm';
+import { BudgetSummary } from '@/features/budget/components/BudgetSummary';
 
 export function ProjectInfo() {
   const selectedProjectId = useStore((state) => state.selectedProjectId);
@@ -69,6 +70,9 @@ export function ProjectInfo() {
           Edit
         </button>
       </div>
+
+      {/* Budget Summary */}
+      <BudgetSummary />
     </div>
   );
 }

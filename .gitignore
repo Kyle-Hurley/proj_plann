@@ -24,3 +24,4 @@ dist-ssr
 *.sw?
 
 prompt.md
+commit-msg.md
