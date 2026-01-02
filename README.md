@@ -2,7 +2,7 @@
 
 A local-first project planning web application built with React, TypeScript, and Vite.
 
-## Features (Milestone 3)
+## Features (Milestone 4)
 
 ### Project Management
 - Create and manage project metadata (name, description, dates, status)
@@ -82,6 +82,7 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 - **Dexie.js** - IndexedDB wrapper
 - **Tailwind CSS** - Styling
 - **date-fns** - Date utilities
+- **frappe-gantt** - Interactive Gantt chart visualization
 
 ## Project Structure
 
@@ -93,7 +94,8 @@ src/
 │   ├── projects/         # Project management
 │   ├── phases/           # Phase organization
 │   ├── personnel/        # Personnel & assignment
-│   └── budget/           # Budget entries & forecasting
+│   ├── budget/           # Budget entries & forecasting
+│   └── gantt/            # Gantt chart timeline view
 ├── store/                 # Zustand state management
 │   └── slices/           # Feature-based state slices
 ├── services/storage/      # IndexedDB and export/import
@@ -195,6 +197,30 @@ src/
 - Monitor for budget overrun warnings
 - Review trend indicators and cost metrics
 
+### Using the Gantt Chart
+
+**Accessing Gantt View**
+1. Tasks with dates will automatically appear on the timeline
+2. Use the view mode buttons (Day/Week/Month/Quarter/Year) to adjust time scale
+3. Scroll horizontally to navigate through time
+
+**Managing Dependencies**
+1. Click "Edit Dependencies" button on any task card
+2. Select tasks that must complete before this task can start
+3. Cycle detection prevents invalid circular dependencies
+4. Dependencies appear as arrows on the Gantt chart
+
+**Rescheduling Tasks**
+1. Drag task bars left/right to change start dates
+2. Changes persist automatically to IndexedDB
+3. Dependency constraints are maintained
+
+**Task Date Defaults**
+- Tasks without dates get intelligent defaults:
+  - If no dependencies: Start today, 7-day duration
+  - With dependencies: Start when dependencies complete
+  - Respects dependency chain for cascading dates
+
 ### Export/Import Data
 
 - **Export**: Click "Export" in the header to download project as JSON (includes personnel & budget)
@@ -245,10 +271,13 @@ import { useStore } from '@/store/store';
 - ✅ Real-time variance tracking (estimated vs actual)
 - ✅ Budget overrun warnings and trend indicators
 
-### Milestone 4: Gantt Chart
-- Visual timeline
-- Drag-to-reschedule
-- Dependency visualization
+### Milestone 4: Gantt Chart ✅ COMPLETED
+- ✅ Interactive timeline visualization with frappe-gantt
+- ✅ Multiple view modes (Day, Week, Month, Quarter, Year)
+- ✅ Task dependency management with cycle detection
+- ✅ Drag-and-drop task rescheduling
+- ✅ Smart date defaults based on dependencies
+- ✅ Visual progress tracking with color-coded status
 
 ### Milestone 5: Advanced Features
 - Dependency-aware scheduling

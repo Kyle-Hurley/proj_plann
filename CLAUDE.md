@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **proj_plann** is a local-first project planning web application built with React, TypeScript, and Vite. It provides comprehensive project planning with tasks, hierarchical phases, personnel management, budget tracking with cost forecasting, all with local persistence using IndexedDB.
 
-**Current Status**: Milestone 3 - Personnel & Budget Management with Cost Forecasting
+**Current Status**: Milestone 4 - Gantt Chart Visualization
 
 ## Development Commands
 
@@ -36,6 +36,7 @@ npm run lint
 - **Database**: IndexedDB via Dexie.js
 - **Styling**: Tailwind CSS
 - **Date Utilities**: date-fns (tree-shakeable)
+- **Gantt Visualization**: frappe-gantt (MIT-licensed, interactive timeline)
 
 ### Architecture Pattern
 
@@ -67,8 +68,12 @@ src/
 │   │   └── components/   # PhaseList, PhaseItem, PhaseForm
 │   ├── personnel/
 │   │   └── components/   # PersonnelList, PersonnelItem, PersonnelForm, PersonnelAssignmentModal
-│   └── budget/
-│       └── components/   # BudgetList, BudgetEntryItem, BudgetEntryForm, BudgetSummary, BudgetForecast
+│   ├── budget/
+│   │   └── components/   # BudgetList, BudgetEntryItem, BudgetEntryForm, BudgetSummary, BudgetForecast
+│   └── gantt/
+│       ├── components/   # GanttView, GanttToolbar, TaskDependencyEditor
+│       ├── utils/        # ganttTransform, dependencyValidation, defaultDates
+│       └── types/        # frappe-gantt.d.ts (TypeScript definitions)
 │
 ├── store/                # State management
 │   ├── store.ts          # Zustand store with all slices + selectors
@@ -78,7 +83,8 @@ src/
 │       ├── phasesSlice.ts      # Phase CRUD with 2-level validation
 │       ├── filtersSlice.ts     # Filter state management
 │       ├── personnelSlice.ts   # Personnel CRUD with dependency checking
-│       └── budgetSlice.ts      # Budget entry CRUD
+│       ├── budgetSlice.ts      # Budget entry CRUD
+│       └── ganttSlice.ts       # Gantt view mode state
 │
 ├── services/             # Infrastructure layer
 │   └── storage/
@@ -89,7 +95,8 @@ src/
 │   └── models.ts         # TypeScript data models + filter types
 │
 └── styles/
-    └── index.css         # Tailwind imports
+    ├── index.css         # Tailwind imports
+    └── gantt.css         # Gantt chart custom styles
 ```
 
 ### Data Model
@@ -115,6 +122,7 @@ Data is stored in a **normalized structure** (entities indexed by ID) in Indexed
   - Linked to project via `projectId`, optionally to phase via `phaseId`
   - Optional `startDate` and `dueDate` for scheduling
   - **`assignedTo`**: Array of personnel IDs assigned to this task
+  - **`dependsOn`**: Array of task IDs that must complete before this task starts
   - Auto-generated fields: `id` (UUID), `createdAt`, `updatedAt`
 
 - **Personnel**: Team members with roles and hourly rates
@@ -150,8 +158,17 @@ Data is stored in a **normalized structure** (entities indexed by ID) in Indexed
 12. **`src/features/personnel/components/PersonnelAssignmentModal.tsx`** - Assign personnel to tasks
 13. **`src/features/budget/components/BudgetEntryForm.tsx`** - Budget entry with auto-calculation
 14. **`src/features/budget/components/BudgetForecast.tsx`** - Cost forecast with burn rate
-10. **`src/features/phases/components/PhaseList.tsx`** - Phase hierarchy display
-11. **`src/app/App.tsx`** - 3-column layout (project/phases, tasks, filters)
+15. **`src/features/phases/components/PhaseList.tsx`** - Phase hierarchy display
+16. **`src/app/App.tsx`** - 3-column layout (project/phases, tasks, filters)
+
+#### Critical for Milestone 4:
+17. **`src/features/gantt/components/GanttView.tsx`** - Main Gantt chart visualization with frappe-gantt
+18. **`src/features/gantt/components/GanttToolbar.tsx`** - View mode selector (Day/Week/Month/Quarter/Year)
+19. **`src/features/gantt/components/TaskDependencyEditor.tsx`** - Dependency management modal
+20. **`src/features/gantt/utils/ganttTransform.ts`** - Transform tasks to frappe-gantt format
+21. **`src/features/gantt/utils/dependencyValidation.ts`** - Cycle detection and validation
+22. **`src/features/gantt/utils/defaultDates.ts`** - Smart date assignment based on dependencies
+23. **`src/store/slices/ganttSlice.ts`** - Gantt view mode state management
 
 ### State Management Pattern
 
@@ -259,10 +276,16 @@ this.version(2).stores({
 - ✅ Budget overrun warnings and trend indicators
 - ✅ Dependency protection (can't delete personnel with assignments or budget entries)
 
-### Milestone 4: Gantt Chart
-- Integrate DHTMLX Gantt (MIT version)
-- Visual timeline with drag-to-reschedule
-- Dependency visualization
+### Milestone 4: Gantt Chart ✅ COMPLETED
+- ✅ Integrated frappe-gantt for interactive timeline visualization
+- ✅ Multiple view modes: Day, Week, Month, Quarter, Year
+- ✅ Task dependency management with cycle detection
+- ✅ Drag-and-drop task rescheduling with auto-save
+- ✅ Smart date defaults based on dependency chains
+- ✅ Visual progress tracking with color-coded status bars
+- ✅ TypeScript type definitions for frappe-gantt library
+
+**Note**: Original plan mentioned DHTMLX Gantt, but frappe-gantt was chosen instead (also MIT-licensed, smaller bundle size, better TypeScript support).
 
 ### Milestone 5: Advanced Scheduling
 - Dependency-aware scheduling

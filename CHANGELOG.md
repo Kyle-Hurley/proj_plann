@@ -7,6 +7,97 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-01-01
+
+### Added - Milestone 4: Gantt Chart Visualization
+
+#### Gantt Chart Features
+- **Interactive timeline visualization**: Integrated frappe-gantt library for visual project timeline
+  - MIT-licensed, lightweight Gantt chart component
+  - Replaced originally planned DHTMLX Gantt for smaller bundle size and better TypeScript support
+- **Multiple view modes**: Switch between Day, Week, Month, Quarter, and Year views
+  - GanttToolbar component for view mode selection
+  - Persistent view mode using localStorage
+- **Task dependency system**: Complete dependency management with validation
+  - Tasks can specify dependencies via `dependsOn` array (task IDs)
+  - TaskDependencyEditor modal for adding/removing dependencies
+  - Cycle detection prevents circular dependency chains
+  - Visual dependency arrows on Gantt chart
+- **Drag-and-drop rescheduling**: Interactive task bar manipulation
+  - Drag task bars left/right to change start dates
+  - Changes auto-save to IndexedDB
+  - Date changes persist across page reloads
+- **Smart date defaults**: Intelligent date assignment for tasks without dates
+  - Tasks with no dependencies: Start today, 7-day duration
+  - Tasks with dependencies: Start when all dependencies complete
+  - Cascading date calculations through dependency chains
+  - Ensures task bars always visible on timeline
+- **Visual progress tracking**: Color-coded task bars based on status
+  - Custom status colors (todo: gray, in-progress: blue, done: green, etc.)
+  - Task completion status reflected visually
+  - Click tasks on chart to edit
+
+#### Components Added
+- `GanttView` - Main Gantt chart visualization wrapper
+  - Integrates frappe-gantt with React lifecycle
+  - Handles task updates and date changes
+  - Responsive chart rendering
+- `GanttToolbar` - View mode selector with radio buttons
+  - Day, Week, Month, Quarter, Year options
+  - Persists selection to localStorage
+- `TaskDependencyEditor` - Modal for dependency management
+  - Shows all project tasks as potential dependencies
+  - Pre-selects existing dependencies
+  - Validates for circular dependencies
+  - Save/cancel with loading states
+
+#### Utilities Added
+- `ganttTransform.ts` - Transform tasks to frappe-gantt format
+  - Converts Task entities to Gantt-compatible format
+  - Handles date defaulting and dependency mapping
+- `dependencyValidation.ts` - Dependency cycle detection
+  - Graph-based cycle detection algorithm
+  - Prevents circular dependency chains
+  - Returns validation errors with task details
+- `defaultDates.ts` - Smart date assignment logic
+  - Calculates start dates based on dependency chains
+  - Handles tasks with/without dependencies
+  - 7-day default duration for tasks
+
+#### Type Definitions Added
+- `frappe-gantt.d.ts` - TypeScript definitions for frappe-gantt
+  - Gantt class interface
+  - Task, ViewMode, and options types
+  - Enables full TypeScript support
+
+#### State Management Enhancements
+- **New Zustand slice**:
+  - `ganttSlice`: Gantt view mode state management
+- **Enhanced Task entity**:
+  - Added `dependsOn` field: Array of task IDs
+  - Exported in JSON for full project state preservation
+
+#### UI/UX Improvements
+- **Updated 3-column layout**:
+  - GanttView integrated into center panel above TaskList
+  - Seamless transition between list and timeline views
+- **Gantt-specific styling**:
+  - Custom CSS in `src/styles/gantt.css`
+  - Task bar colors, dependency arrows, grid styling
+  - Responsive timeline container
+- **Dependency visualization**:
+  - Arrow connectors between dependent tasks
+  - Clear visual representation of task relationships
+
+#### Example Data
+- **example-groundwater-study.json**: Comprehensive sample project
+  - Environmental science project demonstrating full feature set
+  - 7 personnel with realistic roles and rates ($65-$185/hour)
+  - 4 parent phases, 8 child phases
+  - 14 tasks with 8 dependency relationships
+  - 20 budget entries across all categories
+  - Realistic project structure for testing and demos
+
 ## [0.3.0] - 2025-12-31
 
 ### Added - Milestone 3: Personnel & Budget Management with Cost Forecasting
@@ -340,17 +431,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Future Milestones
 
-### Milestone 4: Gantt Chart (Planned)
-- Visual timeline with DHTMLX Gantt
-- Drag-to-reschedule functionality
-- Dependency visualization
+### Milestone 4: Gantt Chart ✅ COMPLETED (Released in v0.4.0)
+- ✅ Visual timeline with frappe-gantt
+- ✅ Drag-to-reschedule functionality
+- ✅ Dependency visualization with cycle detection
 
 ### Milestone 5: Advanced Features (Planned)
 - Dependency-aware scheduling
 - What-if analysis
 - Critical path analysis
 
-[Unreleased]: https://github.com/yourusername/proj_plann/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/yourusername/proj_plann/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/yourusername/proj_plann/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/yourusername/proj_plann/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/yourusername/proj_plann/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/yourusername/proj_plann/compare/v0.1.0...v0.2.0

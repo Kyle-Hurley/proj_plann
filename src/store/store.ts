@@ -6,6 +6,7 @@ import { createPhasesSlice, type PhasesSlice } from './slices/phasesSlice';
 import { createFiltersSlice, type FiltersSlice } from './slices/filtersSlice';
 import { createPersonnelSlice, type PersonnelSlice } from './slices/personnelSlice';
 import { createBudgetSlice, type BudgetSlice } from './slices/budgetSlice';
+import { createGanttSlice, type GanttSlice } from './slices/ganttSlice';
 import { initializeDatabase } from '@/services/storage/db';
 import type { Phase, Task, Personnel, BudgetEntry, ProjectBudgetSummary, BudgetCategorySummary, CostForecast } from '@/types/models';
 import { BUDGET_CATEGORIES } from '@/types/models';
@@ -14,7 +15,7 @@ import { BUDGET_CATEGORIES } from '@/types/models';
 // ROOT STORE TYPE
 // ============================================================================
 
-export type RootStore = TasksSlice & ProjectsSlice & PhasesSlice & FiltersSlice & PersonnelSlice & BudgetSlice;
+export type RootStore = TasksSlice & ProjectsSlice & PhasesSlice & FiltersSlice & PersonnelSlice & BudgetSlice & GanttSlice;
 
 // ============================================================================
 // CREATE STORE
@@ -29,6 +30,7 @@ export const useStore = create<RootStore>()(
       ...createFiltersSlice(...args),
       ...createPersonnelSlice(...args),
       ...createBudgetSlice(...args),
+      ...createGanttSlice(...args),
     }),
     {
       name: 'ProjectPlannerStore',

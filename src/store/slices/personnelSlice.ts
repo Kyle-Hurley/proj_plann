@@ -123,7 +123,7 @@ export const createPersonnelSlice: StateCreator<PersonnelSlice> = (set, get) => 
     try {
       // Check for task assignments
       const tasksWithPersonnel = await db.tasks
-        .filter(t => t.assignedTo?.includes(id))
+        .filter(t => t.assignedTo ? t.assignedTo.includes(id) : false)
         .count();
       if (tasksWithPersonnel > 0) {
         throw new Error(`Cannot delete: Personnel assigned to ${tasksWithPersonnel} task(s). Unassign first.`);

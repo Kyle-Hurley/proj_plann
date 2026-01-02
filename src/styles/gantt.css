@@ -1,0 +1,188 @@
+/* Frappe Gantt Styles - Customized for proj_plann */
+
+/* Import Frappe Gantt default styles */
+@import '../../node_modules/frappe-gantt/dist/frappe-gantt.css';
+
+/* Override default Frappe Gantt colors with Tailwind theme */
+:root {
+  --gantt-bg: #ffffff;
+  --gantt-border: #e5e7eb; /* gray-200 */
+  --gantt-primary: #3b82f6; /* blue-500 */
+  --gantt-bar-bg: #dbeafe; /* blue-100 */
+  --gantt-bar-stroke: #3b82f6; /* blue-500 */
+  --gantt-bar-label: #1f2937; /* gray-800 */
+  --gantt-arrow: #6b7280; /* gray-500 */
+  --gantt-today: #ef4444; /* red-500 */
+}
+
+/* Gantt container styling */
+.gantt-wrapper {
+  width: 100%;
+  min-height: 800px;
+}
+
+#gantt-container {
+  min-height: 800px;
+  max-height: calc(100vh - 200px);
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+/* Ensure SVG fills the container */
+#gantt-container svg {
+  width: 100%;
+  min-height: 700px;
+}
+
+/* Custom popup styling */
+.gantt-popup {
+  padding: 12px;
+  min-width: 200px;
+}
+
+.gantt-popup h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1f2937;
+}
+
+.gantt-popup p {
+  font-size: 12px;
+  margin: 4px 0;
+  color: #4b5563;
+}
+
+.gantt-popup strong {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Priority-based bar colors */
+.bar-wrapper.priority-critical .bar {
+  fill: #fee2e2 !important; /* red-100 */
+  stroke: #dc2626 !important; /* red-600 */
+  stroke-width: 2 !important;
+}
+
+.bar-wrapper.priority-high .bar {
+  fill: #fed7aa !important; /* orange-100 */
+  stroke: #ea580c !important; /* orange-600 */
+  stroke-width: 2 !important;
+}
+
+.bar-wrapper.priority-medium .bar {
+  fill: #fef3c7 !important; /* yellow-100 */
+  stroke: #f59e0b !important; /* yellow-500 */
+}
+
+.bar-wrapper.priority-low .bar {
+  fill: #e0e7ff !important; /* indigo-100 */
+  stroke: #6366f1 !important; /* indigo-500 */
+}
+
+/* Status-based bar styles */
+.bar-wrapper.status-done .bar {
+  fill: #d1fae5 !important; /* green-100 */
+  stroke: #10b981 !important; /* green-500 */
+  stroke-width: 2 !important;
+}
+
+.bar-wrapper.status-in-progress .bar {
+  fill: #dbeafe !important; /* blue-100 */
+  stroke: #3b82f6 !important; /* blue-500 */
+  stroke-width: 2 !important;
+}
+
+.bar-wrapper.status-blocked .bar {
+  fill: repeating-linear-gradient(
+    45deg,
+    #fee2e2,
+    #fee2e2 10px,
+    #fca5a5 10px,
+    #fca5a5 20px
+  ) !important; /* red striped pattern */
+  stroke: #dc2626 !important;
+  stroke-width: 2 !important;
+}
+
+.bar-wrapper.status-cancelled .bar {
+  fill: #f3f4f6 !important; /* gray-100 */
+  stroke: #9ca3af !important; /* gray-400 */
+  opacity: 0.5;
+}
+
+.bar-wrapper.status-todo .bar {
+  fill: #f9fafb !important; /* gray-50 */
+  stroke: #9ca3af !important; /* gray-400 */
+}
+
+/* Default dates indicator (dashed border for tasks with auto-generated dates) */
+.bar-wrapper.has-default-dates .bar {
+  stroke-dasharray: 5, 5 !important;
+  opacity: 0.7;
+}
+
+.bar-wrapper.has-default-dates .bar-label {
+  font-style: italic;
+  opacity: 0.8;
+}
+
+/* Dependency arrows */
+.arrow {
+  stroke: #6b7280 !important; /* gray-500 */
+  stroke-width: 1.5 !important;
+}
+
+/* Today line */
+.today-highlight {
+  stroke: #ef4444 !important; /* red-500 */
+  stroke-width: 2 !important;
+  stroke-dasharray: 4, 4;
+  opacity: 0.6;
+}
+
+/* Hover effects */
+.bar-wrapper:hover .bar {
+  opacity: 0.9;
+  cursor: pointer;
+}
+
+.bar-wrapper:hover .bar-label {
+  font-weight: 600;
+}
+
+/* Progress bar fill */
+.bar-progress {
+  fill: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Grid styling */
+.grid-row {
+  fill: none;
+}
+
+.grid-row:nth-child(even) {
+  fill: #f9fafb; /* gray-50 */
+}
+
+.grid-header {
+  fill: #f3f4f6; /* gray-100 */
+}
+
+/* Bar labels */
+.bar-label {
+  fill: #1f2937; /* gray-800 */
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Handle styling for resizing */
+.handle {
+  fill: #3b82f6 !important; /* blue-500 */
+  cursor: ew-resize;
+}
+
+.handle:hover {
+  fill: #2563eb !important; /* blue-600 */
+}

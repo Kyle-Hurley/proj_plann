@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useStore } from '@/store/store';
 import { TASK_STATUSES, TASK_PRIORITIES, type Task, type TaskStatus, type TaskPriority } from '@/types/models';
+import { TaskDependencyEditor } from '@/features/gantt/components/TaskDependencyEditor';
 
 interface TaskFormProps {
   task?: Task;  // If provided, we're editing; otherwise creating
@@ -261,6 +262,13 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
             <p className="mt-2 text-xs text-blue-600">
               Use the "Assign People" button in the task card to manage assignments
             </p>
+          </div>
+        )}
+
+        {/* Task Dependencies */}
+        {isEditing && task && (
+          <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
+            <TaskDependencyEditor task={task} />
           </div>
         )}
 
